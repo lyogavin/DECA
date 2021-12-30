@@ -49,6 +49,7 @@ class TestData(Dataset):
         '''
             testpath: folder, imagepath_list, image path, video path
         '''
+        self.nparray_img = None
         if isinstance(testpath, list):
             self.imagepath_list = testpath
         elif os.path.isdir(testpath): 
@@ -57,6 +58,9 @@ class TestData(Dataset):
             self.imagepath_list = [testpath]
         elif os.path.isfile(testpath) and (testpath[-3:] in ['mp4', 'csv', 'vid', 'ebm']):
             self.imagepath_list = video2sequence(testpath)
+        elif isinstance(testpath, type(np.array([0]))):
+            self.imagepath_list = ["/tmp/nparray"]
+            self.nparray_img = testpath
         else:
             print(f'please check the test path: {testpath}')
             exit()
@@ -75,7 +79,10 @@ class TestData(Dataset):
             exit()
 
     def __len__(self):
-        return len(self.imagepath_list)
+        if self.nparray_img is not None:
+            return 1
+        else:
+            return len(self.imagepath_list)
 
     def bbox2point(self, left, right, top, bottom, type='bbox'):
         ''' bbox from detector and landmarks are different
@@ -94,7 +101,10 @@ class TestData(Dataset):
         imagepath = self.imagepath_list[index]
         imagename = os.path.splitext(os.path.split(imagepath)[-1])[0]
 
-        image = np.array(imread(imagepath))
+        if self.nparray_img is not None:
+            image = self.nparray_img
+        else:
+            image = np.array(imread(imagepath))
         if len(image.shape) == 2:
             image = image[:,:,None].repeat(1,1,3)
         if len(image.shape) == 3 and image.shape[2] > 3:
