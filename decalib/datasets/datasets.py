@@ -50,7 +50,11 @@ class TestData(Dataset):
             testpath: folder, imagepath_list, image path, video path
         '''
         self.nparray_img = None
-        if isinstance(testpath, list):
+
+        if isinstance(testpath, type(np.array([0]))):
+            self.imagepath_list = ["/tmp/nparray"]
+            self.nparray_img = testpath
+        elif isinstance(testpath, list):
             self.imagepath_list = testpath
         elif os.path.isdir(testpath): 
             self.imagepath_list = glob(testpath + '/*.jpg') +  glob(testpath + '/*.png') + glob(testpath + '/*.bmp')
@@ -58,9 +62,6 @@ class TestData(Dataset):
             self.imagepath_list = [testpath]
         elif os.path.isfile(testpath) and (testpath[-3:] in ['mp4', 'csv', 'vid', 'ebm']):
             self.imagepath_list = video2sequence(testpath)
-        elif isinstance(testpath, type(np.array([0]))):
-            self.imagepath_list = ["/tmp/nparray"]
-            self.nparray_img = testpath
         else:
             print(f'please check the test path: {testpath}')
             exit()
